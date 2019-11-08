@@ -2,9 +2,21 @@ import parse from 'csv-parse';
 import csvToJSON from 'csvtojson';
 import { startCase } from 'lodash';
 import React from 'react';
-import { CartesianGrid, Line, LineChart, XAxis, YAxis } from 'recharts';
+import {
+  CartesianGrid,
+  Line,
+  LineChart,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 import './App.css';
 import { Fight, RawFight } from './interfaces';
+
+const getLastName = (fullName: string) =>
+  (fullName.match(/^\w+ (\w+)/) || [])[1];
+const concatNames = (first: string, second: string) =>
+  first.concat(' - ').concat(second);
 
 const borderStyle: React.CSSProperties = {
   border: '1px solid #ccc',
@@ -17,6 +29,7 @@ const dataStyle = { ...borderStyle, ...fieldStyle };
 
 interface FightData {
   label: string;
+  fullNames: string;
   totalSigStrikesLanded: Fight['R_avg_SIG_STR_landed'];
 }
 
@@ -53,15 +66,14 @@ const App: React.FC = () => {
                   const totalSigStrikesLanded =
                     parseFloat(B_avg_SIG_STR_landed) +
                     parseFloat(R_avg_SIG_STR_landed);
-                  const label = B_fighter.concat(' - ').concat(R_fighter);
-                  console.log(
-                    label,
-                    B_avg_SIG_STR_landed,
-                    R_avg_SIG_STR_landed,
-                  );
+                  const fullNames = concatNames(B_fighter, R_fighter);
                   return {
-                    label,
-                    totalSigStrikesLanded,
+                    label: concatNames(
+                      getLastName(B_fighter),
+                      getLastName(R_fighter),
+                    ),
+                    fullNames,
+                    totalSigStrikesLanded: Math.round(totalSigStrikesLanded),
                   };
                 },
               ),
@@ -80,7 +92,7 @@ const App: React.FC = () => {
       <div style={{ marginBottom: 40 }}>
         <LineChart
           data={ufcFightHistoryJSON}
-          width={20000}
+          width={10000}
           height={1000}
           margin={{ top: 5, right: 20, bottom: 5, left: 0 }}
         >
@@ -88,7 +100,9 @@ const App: React.FC = () => {
             dataKey="totalSigStrikesLanded"
             type="monotone"
             stroke="#8884d8"
+            activeDot={{ r: 6 }}
           />
+          <Tooltip />
           <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
           <XAxis dataKey="label" />
           <YAxis />
