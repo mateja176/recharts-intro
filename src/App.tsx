@@ -10,16 +10,21 @@ const borderStyle: React.CSSProperties = {
 
 const fieldStyle: React.CSSProperties = { whiteSpace: 'nowrap', padding: 5 };
 
+const dataStyle = { ...borderStyle, ...fieldStyle };
+
 const App: React.FC = () => {
   const [ufcFightHistory, setUfcFightHistory] = React.useState([[]]);
 
   React.useEffect(() => {
     fetch('/data/ufc-fight-history.csv')
       .then(res => res.text())
-      .then(text =>
-        parse(text, (err, data) => {
+      .then(csv => csv.split('\n'))
+      .then(csv => csv.slice(0, 101))
+      .then(csv => csv.join('\n'))
+      .then(csv =>
+        parse(csv, (err, data) => {
           if (!err) {
-            setUfcFightHistory(data.slice(0, 100));
+            setUfcFightHistory(data);
           }
         }),
       );
@@ -31,8 +36,9 @@ const App: React.FC = () => {
         <thead>
           {ufcFightHistory.slice(0, 1).map((row, i) => (
             <tr key={i}>
+              <th />
               {row.map((heading, j) => (
-                <th key={j} style={{ ...borderStyle, ...fieldStyle }}>
+                <th key={j} style={dataStyle}>
                   {startCase(heading)}
                 </th>
               ))}
@@ -42,8 +48,9 @@ const App: React.FC = () => {
         <tbody>
           {ufcFightHistory.slice(1).map((row, i) => (
             <tr key={i} style={{ background: i % 2 ? '#eee' : 'white' }}>
+              <td style={{ ...dataStyle, textAlign: 'right' }}>{i + 1}.</td>
               {row.map((field, j) => (
-                <td key={j} style={{ ...borderStyle, ...fieldStyle }}>
+                <td key={j} style={dataStyle}>
                   {field}
                 </td>
               ))}
