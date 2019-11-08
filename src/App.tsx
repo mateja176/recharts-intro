@@ -3,7 +3,10 @@ import csvToJSON from 'csvtojson';
 import { startCase } from 'lodash';
 import React from 'react';
 import {
+  Bar,
+  BarChart,
   CartesianGrid,
+  Legend,
   Line,
   LineChart,
   Tooltip,
@@ -63,17 +66,27 @@ const App: React.FC = () => {
                   R_avg_SIG_STR_landed,
                   B_avg_SIG_STR_landed,
                 }) => {
-                  const totalSigStrikesLanded =
-                    parseFloat(B_avg_SIG_STR_landed) +
-                    parseFloat(R_avg_SIG_STR_landed);
                   const fullNames = concatNames(B_fighter, R_fighter);
+
+                  const blueSigStrikesLanded = Math.round(
+                    parseFloat(R_avg_SIG_STR_landed),
+                  );
+                  const redSigStrikesLanded = Math.round(
+                    parseFloat(B_avg_SIG_STR_landed),
+                  );
+
+                  const totalSigStrikesLanded =
+                    blueSigStrikesLanded + redSigStrikesLanded;
+
                   return {
                     label: concatNames(
                       getLastName(B_fighter),
                       getLastName(R_fighter),
                     ),
                     fullNames,
-                    totalSigStrikesLanded: Math.round(totalSigStrikesLanded),
+                    totalSigStrikesLanded,
+                    blueSigStrikesLanded,
+                    redSigStrikesLanded,
                   };
                 },
               ),
@@ -90,6 +103,25 @@ const App: React.FC = () => {
   return (
     <div style={{ margin: 20 }}>
       <div style={{ marginBottom: 40 }}>
+        <BarChart
+          width={11000}
+          height={1000}
+          data={ufcFightHistoryJSON}
+          margin={{
+            top: 5,
+            right: 30,
+            left: 20,
+            bottom: 5,
+          }}
+        >
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="label" />
+          <YAxis />
+          <Tooltip />
+          <Legend />
+          <Bar dataKey="blueSigStrikesLanded" fill="#8884d8" />
+          <Bar dataKey="redSigStrikesLanded" fill="#82ca9d" />
+        </BarChart>
         <LineChart
           data={ufcFightHistoryJSON}
           width={10000}
