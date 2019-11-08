@@ -1,7 +1,10 @@
 import parse from 'csv-parse';
+import csvToJSON from 'csvtojson';
 import { startCase } from 'lodash';
 import React from 'react';
+import { CartesianGrid, Line, LineChart, XAxis, YAxis } from 'recharts';
 import './App.css';
+import { Fight, RawFight } from './interfaces';
 
 const borderStyle: React.CSSProperties = {
   border: '1px solid #ccc',
@@ -12,8 +15,18 @@ const fieldStyle: React.CSSProperties = { whiteSpace: 'nowrap', padding: 5 };
 
 const dataStyle = { ...borderStyle, ...fieldStyle };
 
+interface FightData {
+  label: string;
+  totalSigStrikesLanded: Fight['R_avg_SIG_STR_landed'];
+}
+
+type Fights = FightData[];
+
 const App: React.FC = () => {
-  const [ufcFightHistory, setUfcFightHistory] = React.useState([[]]);
+  const [ufcFightHistory, setUfcFightHistoryCSV] = React.useState([[]]);
+  const [ufcFightHistoryJSON, setUfcFightHistoryJSON] = React.useState<Fights>(
+    [],
+  );
 
   React.useEffect(() => {
     fetch('/data/ufc-fight-history.csv')
@@ -21,17 +34,66 @@ const App: React.FC = () => {
       .then(csv => csv.split('\n'))
       .then(csv => csv.slice(0, 101))
       .then(csv => csv.join('\n'))
-      .then(csv =>
+      .then(csv => {
+        csvToJSON()
+          .fromString(csv)
+          .then((fights: RawFight[]) =>
+            fights
+              .filter(
+                ({ R_avg_SIG_STR_landed, B_avg_SIG_STR_landed }) =>
+                  R_avg_SIG_STR_landed && B_avg_SIG_STR_landed,
+              )
+              .map<FightData>(
+                ({
+                  R_fighter,
+                  B_fighter,
+                  R_avg_SIG_STR_landed,
+                  B_avg_SIG_STR_landed,
+                }) => {
+                  const totalSigStrikesLanded =
+                    parseFloat(B_avg_SIG_STR_landed) +
+                    parseFloat(R_avg_SIG_STR_landed);
+                  const label = B_fighter.concat(' - ').concat(R_fighter);
+                  console.log(
+                    label,
+                    B_avg_SIG_STR_landed,
+                    R_avg_SIG_STR_landed,
+                  );
+                  return {
+                    label,
+                    totalSigStrikesLanded,
+                  };
+                },
+              ),
+          )
+          .then(setUfcFightHistoryJSON);
         parse(csv, (err, data) => {
           if (!err) {
-            setUfcFightHistory(data);
+            setUfcFightHistoryCSV(data);
           }
-        }),
-      );
+        });
+      });
   }, []);
 
   return (
     <div style={{ margin: 20 }}>
+      <div style={{ marginBottom: 40 }}>
+        <LineChart
+          data={ufcFightHistoryJSON}
+          width={20000}
+          height={1000}
+          margin={{ top: 5, right: 20, bottom: 5, left: 0 }}
+        >
+          <Line
+            dataKey="totalSigStrikesLanded"
+            type="monotone"
+            stroke="#8884d8"
+          />
+          <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
+          <XAxis dataKey="label" />
+          <YAxis />
+        </LineChart>
+      </div>
       <table style={borderStyle}>
         <thead>
           {ufcFightHistory.slice(0, 1).map((row, i) => (
