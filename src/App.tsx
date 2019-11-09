@@ -20,6 +20,8 @@ const getLastName = (fullName: string) =>
   (fullName.match(/^\w+ (\w+)/) || [])[1];
 const concatNames = (first: string, second: string) =>
   first.concat(' - ').concat(second);
+const getLabel = (first: string, second: string) =>
+  concatNames(getLastName(first), getLastName(second));
 
 const borderStyle: React.CSSProperties = {
   border: '1px solid #ccc',
@@ -30,11 +32,11 @@ const fieldStyle: React.CSSProperties = { whiteSpace: 'nowrap', padding: 5 };
 
 const dataStyle = { ...borderStyle, ...fieldStyle };
 
-interface FightData {
-  label: string;
-  fullNames: string;
-  totalSigStrikesLanded: Fight['R_avg_SIG_STR_landed'];
-}
+interface FightData
+  extends Pick<
+    Fight,
+    'R_fighter' | 'B_fighter' | 'R_avg_SIG_STR_landed' | 'B_avg_SIG_STR_landed'
+  > {}
 
 type Fights = FightData[];
 
@@ -66,27 +68,15 @@ const App: React.FC = () => {
                   R_avg_SIG_STR_landed,
                   B_avg_SIG_STR_landed,
                 }) => {
-                  const fullNames = concatNames(B_fighter, R_fighter);
-
-                  const blueSigStrikesLanded = Math.round(
-                    parseFloat(R_avg_SIG_STR_landed),
-                  );
-                  const redSigStrikesLanded = Math.round(
-                    parseFloat(B_avg_SIG_STR_landed),
-                  );
-
-                  const totalSigStrikesLanded =
-                    blueSigStrikesLanded + redSigStrikesLanded;
-
                   return {
-                    label: concatNames(
-                      getLastName(B_fighter),
-                      getLastName(R_fighter),
+                    B_fighter,
+                    R_fighter,
+                    B_avg_SIG_STR_landed: Math.round(
+                      parseFloat(B_avg_SIG_STR_landed),
                     ),
-                    fullNames,
-                    totalSigStrikesLanded,
-                    blueSigStrikesLanded,
-                    redSigStrikesLanded,
+                    R_avg_SIG_STR_landed: Math.round(
+                      parseFloat(R_avg_SIG_STR_landed),
+                    ),
                   };
                 },
               ),
@@ -106,7 +96,18 @@ const App: React.FC = () => {
         <BarChart
           width={11000}
           height={1000}
-          data={ufcFightHistoryJSON}
+          data={ufcFightHistoryJSON.map(
+            ({
+              B_fighter,
+              R_fighter,
+              B_avg_SIG_STR_landed,
+              R_avg_SIG_STR_landed,
+            }) => ({
+              label: getLabel(B_fighter, R_fighter),
+              'Blue Fighter Significant Strikes Landed': B_avg_SIG_STR_landed,
+              'Red Fighter Significant Strikes Landed': R_avg_SIG_STR_landed,
+            }),
+          )}
           margin={{
             top: 5,
             right: 30,
@@ -119,17 +120,34 @@ const App: React.FC = () => {
           <YAxis />
           <Tooltip />
           <Legend />
-          <Bar dataKey="blueSigStrikesLanded" fill="#8884d8" />
-          <Bar dataKey="redSigStrikesLanded" fill="#82ca9d" />
+          <Bar
+            dataKey="Blue Fighter Significant Strikes Landed"
+            fill="#8884d8"
+          />
+          <Bar
+            dataKey="Red Fighter Significant Strikes Landed"
+            fill="#82ca9d"
+          />
         </BarChart>
         <LineChart
-          data={ufcFightHistoryJSON}
+          data={ufcFightHistoryJSON.map(
+            ({
+              B_fighter,
+              R_fighter,
+              B_avg_SIG_STR_landed,
+              R_avg_SIG_STR_landed,
+            }) => ({
+              label: getLabel(B_fighter, R_fighter),
+              'Combined Significant Strikes Landed':
+                B_avg_SIG_STR_landed + R_avg_SIG_STR_landed,
+            }),
+          )}
           width={10000}
           height={1000}
           margin={{ top: 5, right: 20, bottom: 5, left: 0 }}
         >
           <Line
-            dataKey="totalSigStrikesLanded"
+            dataKey="Combined Significant Strikes Landed"
             type="monotone"
             stroke="#8884d8"
             activeDot={{ r: 6 }}
