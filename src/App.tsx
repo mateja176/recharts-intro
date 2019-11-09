@@ -121,12 +121,14 @@ const App: React.FC = () => {
           <Tooltip />
           <Legend />
           <Bar
+            opacity={0.8}
             dataKey="Red Fighter Significant Strikes Landed"
-            fill="#82ca9d"
+            fill="crimson"
           />
           <Bar
+            opacity={0.8}
             dataKey="Blue Fighter Significant Strikes Landed"
-            fill="#8884d8"
+            fill="royalblue"
           />
         </BarChart>
         <LineChart
