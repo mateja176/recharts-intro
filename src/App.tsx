@@ -69,13 +69,13 @@ const App: React.FC = () => {
                   B_avg_SIG_STR_landed,
                 }) => {
                   return {
-                    B_fighter,
                     R_fighter,
-                    B_avg_SIG_STR_landed: Math.round(
-                      parseFloat(B_avg_SIG_STR_landed),
-                    ),
+                    B_fighter,
                     R_avg_SIG_STR_landed: Math.round(
                       parseFloat(R_avg_SIG_STR_landed),
+                    ),
+                    B_avg_SIG_STR_landed: Math.round(
+                      parseFloat(B_avg_SIG_STR_landed),
                     ),
                   };
                 },
@@ -98,14 +98,14 @@ const App: React.FC = () => {
           height={1000}
           data={ufcFightHistoryJSON.map(
             ({
-              B_fighter,
               R_fighter,
-              B_avg_SIG_STR_landed,
+              B_fighter,
               R_avg_SIG_STR_landed,
+              B_avg_SIG_STR_landed,
             }) => ({
-              label: getLabel(B_fighter, R_fighter),
-              'Blue Fighter Significant Strikes Landed': B_avg_SIG_STR_landed,
+              label: getLabel(R_fighter, B_fighter),
               'Red Fighter Significant Strikes Landed': R_avg_SIG_STR_landed,
+              'Blue Fighter Significant Strikes Landed': B_avg_SIG_STR_landed,
             }),
           )}
           margin={{
@@ -121,25 +121,25 @@ const App: React.FC = () => {
           <Tooltip />
           <Legend />
           <Bar
-            dataKey="Blue Fighter Significant Strikes Landed"
-            fill="#8884d8"
-          />
-          <Bar
             dataKey="Red Fighter Significant Strikes Landed"
             fill="#82ca9d"
+          />
+          <Bar
+            dataKey="Blue Fighter Significant Strikes Landed"
+            fill="#8884d8"
           />
         </BarChart>
         <LineChart
           data={ufcFightHistoryJSON.map(
             ({
-              B_fighter,
               R_fighter,
-              B_avg_SIG_STR_landed,
+              B_fighter,
               R_avg_SIG_STR_landed,
+              B_avg_SIG_STR_landed,
             }) => ({
-              label: getLabel(B_fighter, R_fighter),
+              label: getLabel(R_fighter, B_fighter),
               'Combined Significant Strikes Landed':
-                B_avg_SIG_STR_landed + R_avg_SIG_STR_landed,
+                R_avg_SIG_STR_landed + B_avg_SIG_STR_landed,
             }),
           )}
           width={10000}
